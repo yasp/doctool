@@ -91,7 +91,7 @@ DocGenerator.prototype.load = function(path, cb) {
             }).bind(this));
             
             if (!!cb) cb(null, this.input)
-        } else if (pathLib.extname(realPath) == 'js') {
+        } else if (pathLib.extname(realPath) == '.js') {
             console.log('Load file '+realPath);
             var text = fsLib.readFileSync(realPath).toString();
             var loaded;
