@@ -1,38 +1,41 @@
+var fsLib = require('fs');
+var pathLib = require('path');
+
 /**
  *  Generates the documentation and returns the generated data as a simple HTML file.
  * @this {DocGenerator} - The generator that holds all the data required to generate the output data.
  * 
 */
 function HTMLSimpleConverter() {
-	var result = '';
-	for (var i = 0; i < this.input.length; i++) {
-		var entry = this.input[i];
-		result += '<h1>' + entry.name + '</h1>';
-		if (entry.params.length > 0) {
-			result += "<h2>Parameters: ";
-			var first = false;
-			for (var j = 0; j < entry.params.length; j++) {
-				var type = entry.params[j];
-				if (first) {
-					result += ", ";
-				}
-				result += type.type;
-				first = true;
-			}
-			result += "</h2>";
-		}
-		
-		result += '<p>' + entry.description + '</p>';
-	}
-	
-	
+    var result = '';
+    for (var i = 0; i < this.input.length; i++) {
+        var entry = this.input[i];
+        result += '<h1>' + entry.name + '</h1>';
+        if (entry.params.length > 0) {
+            result += "<h2>Parameters: ";
+            var first = false;
+            for (var j = 0; j < entry.params.length; j++) {
+                var type = entry.params[j];
+                if (first) {
+                    result += ", ";
+                }
+                result += type.type;
+                first = true;
+            }
+            result += "</h2>";
+        }
+        
+        result += '<p>' + entry.description + '</p>';
+    }
+    
+    
 
-	return '<meta charset="utf-8"> \
+    return '<meta charset="utf-8"> \
 <html> \
-	<head> \
-		<title>yasp documentation</title> \
-	</head> \
-	<body>' + result + ' </body> \
+    <head> \
+        <title>yasp documentation</title> \
+    </head> \
+    <body>' + result + ' </body> \
 </html>';
 }
 
@@ -42,7 +45,7 @@ function HTMLSimpleConverter() {
  * 
 */
 function HTMLComplexConverter() {
-	// TODO!
+    // TODO!
 }
 
 /**
@@ -51,7 +54,7 @@ function HTMLComplexConverter() {
  * 
 */
 function CSVConverter() {
-	// TODO!
+    // TODO!
 }
 
 
@@ -61,9 +64,9 @@ function CSVConverter() {
  * @constructor
 */
 function DocGenerator(converter) {
-	this.result = null;
-	this.input	= [];
-	
+    this.result = null;
+    this.input = [];
+    
 }
 
 /**
@@ -72,41 +75,40 @@ function DocGenerator(converter) {
  * @param {DocGenerator-loadedCallback} - The callback function that is executed when loading is done.
 */
 DocGenerator.prototype.load = function(path, cb) {
-	if (path instanceof Array) {
-		for (var i = 0; i < path.length; i++) {
-			this.load(path[i]);
-		}
-		
-		if (!!cb) cb.call(this);
-	} else {
-		var fs = require('fs');
-		var realPath = __dirname + '/' + path;
-		
-		if (fs.statSync(realPath).isDirectory()) {
-			var files = fs.readdirSync(realPath);
-			files.forEach((function(file) {
-				this.load(path + '/' + file);
-			}).bind(this));
-			
-			if (!!cb) cb.call(this);
-		} else if (realPath.substring(realPath.length-2, realPath.length) == 'js') {
-			console.log('Load file '+realPath);
-			var text = fs.readFileSync(realPath).toString();
-			var loaded;
-			try {
-				loaded = JSON.parse(text);
-			} catch (ex) {
-				throw 'Invalid documentation "'+ex.toString()+'"';
-			}
-			if (!!loaded.commands) {
-				this.input = this.input.concat(loaded.commands);
-			} else {
-				this.input.push(loaded);
-			}
-			
-			if (!!cb) cb.call(this);
-		}
-	}
+    if (path instanceof Array) {
+        for (var i = 0; i < path.length; i++) {
+             this.load(path[i]);
+        }
+        
+        if (!!cb) cb(null, this.input);
+    } else {
+        var realPath = pathLib.join(__dirname, path);
+        
+        if (fsLib.statSync(realPath).isDirectory()) {
+            var files = fsLib.readdirSync(realPath);
+            files.forEach((function(file) {
+                this.load(pathLib.join(path, file));
+            }).bind(this));
+            
+            if (!!cb) cb(null, this.input)
+        } else if (pathLib.extname(realPath) == 'js') {
+            console.log('Load file '+realPath);
+            var text = fsLib.readFileSync(realPath).toString();
+            var loaded;
+            try {
+                loaded = JSON.parse(text);
+            } catch (ex) {
+                cb('Invalid documentation "'+ex.toString()+'"', null);
+            }
+            if (!!loaded.commands) {
+                this.input = this.input.concat(loaded.commands);
+            } else {
+                this.input.push(loaded);
+            }
+            
+            if (!!cb) cb(null, this.input)
+        }
+    }
 }
 
 /**
@@ -121,18 +123,16 @@ DocGenerator.prototype.load = function(path, cb) {
  * @param {DocGenerator-savedCallback} - The callback function that is executed when saving is done.
 */
 DocGenerator.prototype.save = function(path, cb) {
-	var fs = require('fs');
-	
-	if (this.result.length == 0) throw 'Convert not called (successfully) yet (result is null)';
-	
-	fs.writeFile(__dirname + '/' + path, this.result, (function(err) {
-		if (err) throw err;
-		if (!!cb) cb.call(this);
-	}).bind(this));
+    if (this.result.length == 0) cb('Convert not called (successfully) yet (result is null)', null);
+    
+    fsLib.writeFile(pathLib.join(__dirname, path), this.result, (function(err) {
+        if (err) throw err;
+        if (!!cb) cb(null, this.result);
+    }).bind(this));
 }
 
 /**
- * @callback DocGenerator-loadedCallback
+ * @callback DocGenerator-savedCallback
  * @this {DocGenerator} - The executing DocGenerator
 */
 
@@ -142,27 +142,27 @@ DocGenerator.prototype.save = function(path, cb) {
  * @param {Converter} - The converter that should be used to convert
 */
 DocGenerator.prototype.convert = function(converter) {
-	if (this.input.length == 0) throw 'No data loaded';
-	
-	if (typeof converter == 'function') {
-		try {
-			this.result = converter.call(this);
-		} catch (ex) {
-			throw 'Converting failed "'+ex.toString()+'"';
-		}
-	} else {
-		this.result = null;
-		throw 'Illegal converter argument.';	
-	}
-	return this.result;
+    if (this.input.length == 0) throw 'No data loaded';
+    
+    if (typeof converter == 'function') {
+        try {
+            this.result = converter.call(this);
+        } catch (ex) {
+            throw 'Converting failed "'+ex.toString()+'"';
+        }
+    } else {
+        this.result = null;
+        throw 'Illegal converter argument.';    
+    }
+    return this.result;
 }
 
 
 // NodeJS Exports
 exports.DocGenerator = DocGenerator;
 exports.converters = {
-	htmlsimple: HTMLSimpleConverter,
-	htmlcomplex: HTMLComplexConverter,
-	csv: CSVConverter
+    htmlsimple: HTMLSimpleConverter,
+    htmlcomplex: HTMLComplexConverter,
+    csv: CSVConverter
 };
 
