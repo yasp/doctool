@@ -4,7 +4,36 @@
  * 
 */
 function HTMLSimpleConverter() {
+	var result = '';
+	this.input.forEach(function(entry) {
+		result += '<h1>' + entry.name + '</h1>';
+		if (entry.params.length > 0) {
+			result += "<h2>Parameters: ";
+			var first = false;
+			entry.forEach(function(type) {
+				if (first) {
+					result += ", ";
+					
+					result += type.type;
+				}
+				
+				first = true;
+			});
+			result += "</h2>";
+		}
+		
+		result += '<p>' + entry.description + '</p>';
+	});
 	
+	
+
+	return '<meta charset="utf-8"> \
+<html> \
+	<head> \
+		<title>yasp documentation</title> \
+	</head> \
+	<body>' + result + ' </body> \
+</html>';
 }
 
 /**
@@ -13,7 +42,7 @@ function HTMLSimpleConverter() {
  * 
 */
 function HTMLComplexConverter() {
-	
+	// TODO!
 }
 
 /**
@@ -22,7 +51,7 @@ function HTMLComplexConverter() {
  * 
 */
 function CSVConverter() {
-	
+	// TODO!
 }
 
 
@@ -39,7 +68,7 @@ function DocGenerator(converter) {
 
 /**
  * Loads the documentation that is located in path.
- * @param {(string|string[])} - The path of the documentatoin. If this is an array every element will be loaded. Paths are relative to the directory of the executing script (__dirname). The file has to contain a well-formed yasp doc file, otherwise an exception is risen.
+ * @param {(string|string[])} - The path of the documentatoin. If this is an array every element will be loaded. Paths are relative to the directory of the executing script (__dirname). The file has to contain a well-formed yasp doc file, otherwise an exception is risen. If path is a directory it loads every file in this directory
  * @param {DocGenerator-loadedCallback} - The callback function that is executed when loading is done.
 */
 DocGenerator.prototype.load = function(path, cb) {
@@ -47,27 +76,36 @@ DocGenerator.prototype.load = function(path, cb) {
 		for (var i = 0; i < path.length; i++) {
 			this.load(path[i]);
 		}
+		
+		if (!!cb) cb.call(this);
 	} else {
 		var fs = require('fs');
+		var realPath = __dirname + '/' + path;
 		
-		fs.readFile(__dirname + '/' + path, (function(err, data) {
-			if (err) throw err; 
-            
+		if (fs.statSync(realPath).isDirectory()) {
+			var files = fs.readdirSync(realPath);
+			files.forEach((function(file) {
+				this.load(path + '/' + file);
+			}).bind(this));
+			
+			if (!!cb) cb.call(this);
+		} else if (realPath.substring(realPath.length-2, realPath.length) == 'js') {
+			console.log('Load file '+realPath);
+			var text = fs.readFileSync(realPath).toString();
 			var loaded;
-			var text = data.toString();
 			try {
 				loaded = JSON.parse(text);
 			} catch (ex) {
-				throw "Invalid documentation '"+ex.toString()+"'";
+				throw 'Invalid documentation "'+ex.toString()+'"';
 			}
 			if (!!loaded.commands) {
 				this.input = this.input.concat(loaded.commands);
 			} else {
-				this.input.push(loaded.command);
+				this.input.push(loaded);
 			}
 			
 			if (!!cb) cb.call(this);
-		}).bind(this));
+		}
 	}
 }
 
@@ -85,7 +123,7 @@ DocGenerator.prototype.load = function(path, cb) {
 DocGenerator.prototype.save = function(path, cb) {
 	var fs = require('fs');
 	
-	if (!this.result) throw "Convert not called (successfully) yet (result is null)";
+	if (this.result.length == 0) throw 'Convert not called (successfully) yet (result is null)';
 	
 	fs.writeFile(__dirname + '/' + path, this.result, (function(err) {
 		if (err) throw err;
@@ -104,19 +142,18 @@ DocGenerator.prototype.save = function(path, cb) {
  * @param {Converter} - The converter that should be used to convert
 */
 DocGenerator.prototype.convert = function(converter) {
-	if (!this.input) throw "No data loaded";
+	if (this.input.length == 0) throw 'No data loaded';
 	
 	if (typeof converter == 'function') {
 		try {
 			this.result = converter.call(this);
 		} catch (ex) {
-			throw "Converting failed '"+ex.toString()+"'";
+			throw 'Converting failed "'+ex.toString()+'"';
 		}
 	} else {
 		this.result = null;
-		throw "Illegal converter argument.";	
+		throw 'Illegal converter argument.';	
 	}
-	
 	return this.result;
 }
 

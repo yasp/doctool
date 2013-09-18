@@ -1,9 +1,9 @@
-var doctool = require('./doctool_module');
+var doctool = require('./doctool');
 
 var gen = new doctool.DocGenerator();
-gen.load("doc/sampledoc.js", function() {
-	this.convert(gen.converter.htmlsimple);
-	this.save("htmlsimple/doc.html", function() {
+gen.load("doc", function() {
+	this.convert(doctool.converters.htmlsimple);
+	this.save("doc/htmlsimple/doc.html", function() {
 		console.log("Converting doc was successful");
 	});
 });

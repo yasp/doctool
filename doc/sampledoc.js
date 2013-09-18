@@ -14,7 +14,9 @@
 			],
 			"params": [
 				{
-					"type": [ "r_byte","r_word", "l_byte", "l_word", "pin", "address" ]
+					"type": "r_byte"
+				}, {
+					"type": "pin"
 				}
 			]
 		}, {
@@ -31,7 +33,9 @@
 			],
 			"params": [
 				{
-					"type": [ "r_byte", "r_word", "l_byte", "l_word", "pin", "address" ]
+					"type": "r_byte"
+				}, {
+					"type": "pin"
 				}
 			]
 		}, {
@@ -48,7 +52,9 @@
 			],
 			"params": [
 				{
-					"type": [ "r_byte","r_word", "l_byte", "l_word", "pin","address" ]
+					"type": "r_byte"
+				}, {
+					"type": "pin"
 				}
 			]
 		}, {
@@ -65,7 +71,9 @@
 			],
 			"params": [
 				{
-					"type": [ "r_byte","r_word", "l_byte", "l_word", "pin","address" ]
+					"type": "r_byte"
+				}, {
+					"type": "pin"
 				}
 			]
 		}, {
@@ -82,7 +90,9 @@
 			],
 			"params": [
 				{
-					"type": [ "r_byte","r_word", "l_byte", "l_word", "pin","address" ]
+					"type": "r_byte"
+				}, {
+					"type": "pin"
 				}
 			]
 		}
