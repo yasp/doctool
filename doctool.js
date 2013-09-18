@@ -5,25 +5,25 @@
 */
 function HTMLSimpleConverter() {
 	var result = '';
-	this.input.forEach(function(entry) {
+	for (var i = 0; i < this.input.length; i++) {
+		var entry = this.input[i];
 		result += '<h1>' + entry.name + '</h1>';
 		if (entry.params.length > 0) {
 			result += "<h2>Parameters: ";
 			var first = false;
-			entry.forEach(function(type) {
+			for (var j = 0; j < entry.params.length; j++) {
+				var type = entry.params[j];
 				if (first) {
 					result += ", ";
-					
-					result += type.type;
 				}
-				
+				result += type.type;
 				first = true;
-			});
+			}
 			result += "</h2>";
 		}
 		
 		result += '<p>' + entry.description + '</p>';
-	});
+	}
 	
 	
 
