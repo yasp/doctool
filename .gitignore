@@ -4,12 +4,6 @@
 # IDE
 .idea
 
-# generated css
-src/css/*.css
-
-# Grunt and build
-dest
+# Build
 node_modules
 
-# Libs
-src/lib

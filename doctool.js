@@ -71,7 +71,7 @@ function DocGenerator(converter) {
 
 /**
  * Loads the documentation that is located in path.
- * @param {(string|string[])} - The path of the documentatoin. If this is an array every element will be loaded. Paths are relative to the directory of the executing script (__dirname). The file has to contain a well-formed yasp doc file, otherwise an exception is risen. If path is a directory it loads every file in this directory
+ * @param {(string|string[])} - The path of the documentatoin. If this is an array every element will be loaded. Paths are relative to the directory of the executing script (__dirname). The file has to contain a well-formed yasp doc file, otherwise an exception is risen. If path is a directory it loads every file in this directory (recursively)
  * @param {DocGenerator-loadedCallback} - The callback function that is executed when loading is done.
 */
 DocGenerator.prototype.load = function(path, cb) {
