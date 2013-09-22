@@ -7,35 +7,35 @@ var pathLib = require('path');
  * 
 */
 function HTMLSimpleConverter() {
-    var result = '';
-    for (var i = 0; i < this.input.length; i++) {
-        var entry = this.input[i];
-        result += '<h1>' + entry.name + '</h1>';
-        if (entry.params.length > 0) {
-            result += "<h2>Parameters: ";
-            var first = false;
-            for (var j = 0; j < entry.params.length; j++) {
-                var type = entry.params[j];
-                if (first) {
-                    result += ", ";
-                }
-                result += type.type;
-                first = true;
-            }
-            result += "</h2>";
+  var result = '';
+  for (var i = 0; i < this.input.length; i++) {
+    var entry = this.input[i];
+    result += '<h1>' + entry.name + '</h1>';
+    if (entry.params.length > 0) {
+      result += "<h2>Parameters: ";
+      var first = false;
+      for (var j = 0; j < entry.params.length; j++) {
+        var type = entry.params[j];
+        if (first) {
+          result += ", ";
         }
-        
-        result += '<p>' + entry.description + '</p>';
+        result += type.type;
+        first = true;
+      }
+      result += "</h2>";
     }
     
-    
+    result += '<p>' + entry.description + '</p>';
+  }
+  
+  
 
-    return '<meta charset="utf-8"> \
+  return '<meta charset="utf-8"> \
 <html> \
-    <head> \
-        <title>yasp documentation</title> \
-    </head> \
-    <body>' + result + ' </body> \
+  <head> \
+    <title>yasp documentation</title> \
+  </head> \
+  <body>' + result + ' </body> \
 </html>';
 }
 
@@ -45,7 +45,7 @@ function HTMLSimpleConverter() {
  * 
 */
 function HTMLComplexConverter() {
-    // TODO!
+  // TODO!
 }
 
 /**
@@ -54,7 +54,7 @@ function HTMLComplexConverter() {
  * 
 */
 function CSVConverter() {
-    // TODO!
+  // TODO!
 }
 
 
@@ -64,9 +64,9 @@ function CSVConverter() {
  * @constructor
 */
 function DocGenerator(converter) {
-    this.result = null;
-    this.input = [];
-    
+  this.result = null;
+  this.input = [];
+  
 }
 
 /**
@@ -75,40 +75,40 @@ function DocGenerator(converter) {
  * @param {DocGenerator-loadedCallback} - The callback function that is executed when loading is done.
 */
 DocGenerator.prototype.load = function(path, cb) {
-    if (path instanceof Array) {
-        for (var i = 0; i < path.length; i++) {
-             this.load(path[i]);
-        }
-        
-        if (!!cb) cb(null, this.input);
-    } else {
-        var realPath = pathLib.join(__dirname, path);
-        
-        if (fsLib.statSync(realPath).isDirectory()) {
-            var files = fsLib.readdirSync(realPath);
-            files.forEach((function(file) {
-                this.load(pathLib.join(path, file));
-            }).bind(this));
-            
-            if (!!cb) cb(null, this.input)
-        } else if (pathLib.extname(realPath) == '.js') {
-            console.log('Load file '+realPath);
-            var text = fsLib.readFileSync(realPath).toString();
-            var loaded;
-            try {
-                loaded = JSON.parse(text);
-            } catch (ex) {
-                cb('Invalid documentation "'+ex.toString()+'"', null);
-            }
-            if (!!loaded.commands) {
-                this.input = this.input.concat(loaded.commands);
-            } else {
-                this.input.push(loaded);
-            }
-            
-            if (!!cb) cb(null, this.input)
-        }
+  if (path instanceof Array) {
+    for (var i = 0; i < path.length; i++) {
+       this.load(path[i]);
     }
+    
+    if (!!cb) cb(null, this.input);
+  } else {
+    var realPath = pathLib.join(__dirname, path);
+    
+    if (fsLib.statSync(realPath).isDirectory()) {
+      var files = fsLib.readdirSync(realPath);
+      files.forEach((function(file) {
+        this.load(pathLib.join(path, file));
+      }).bind(this));
+      
+      if (!!cb) cb(null, this.input)
+    } else if (pathLib.extname(realPath) == '.js') {
+      console.log('Load file '+realPath);
+      var text = fsLib.readFileSync(realPath).toString();
+      var loaded;
+      try {
+        loaded = JSON.parse(text);
+      } catch (ex) {
+        cb('Invalid documentation "'+ex.toString()+'"', null);
+      }
+      if (!!loaded.commands) {
+        this.input = this.input.concat(loaded.commands);
+      } else {
+        this.input.push(loaded);
+      }
+      
+      if (!!cb) cb(null, this.input)
+    }
+  }
 }
 
 /**
@@ -123,12 +123,12 @@ DocGenerator.prototype.load = function(path, cb) {
  * @param {DocGenerator-savedCallback} - The callback function that is executed when saving is done.
 */
 DocGenerator.prototype.save = function(path, cb) {
-    if (this.result.length == 0) cb('Convert not called (successfully) yet (result is null)', null);
-    
-    fsLib.writeFile(pathLib.join(__dirname, path), this.result, (function(err) {
-        if (err) throw err;
-        if (!!cb) cb(null, this.result);
-    }).bind(this));
+  if (this.result.length == 0) cb('Convert not called (successfully) yet (result is null)', null);
+  
+  fsLib.writeFile(pathLib.join(__dirname, path), this.result, (function(err) {
+    if (err) throw err;
+    if (!!cb) cb(null, this.result);
+  }).bind(this));
 }
 
 /**
@@ -142,27 +142,27 @@ DocGenerator.prototype.save = function(path, cb) {
  * @param {Converter} - The converter that should be used to convert
 */
 DocGenerator.prototype.convert = function(converter) {
-    if (this.input.length == 0) throw 'No data loaded';
-    
-    if (typeof converter == 'function') {
-        try {
-            this.result = converter.call(this);
-        } catch (ex) {
-            throw 'Converting failed "'+ex.toString()+'"';
-        }
-    } else {
-        this.result = null;
-        throw 'Illegal converter argument.';    
+  if (this.input.length == 0) throw 'No data loaded';
+  
+  if (typeof converter == 'function') {
+    try {
+      this.result = converter.call(this);
+    } catch (ex) {
+      throw 'Converting failed "'+ex.toString()+'"';
     }
-    return this.result;
+  } else {
+    this.result = null;
+    throw 'Illegal converter argument.';  
+  }
+  return this.result;
 }
 
 
 // NodeJS Exports
 exports.DocGenerator = DocGenerator;
 exports.converters = {
-    htmlsimple: HTMLSimpleConverter,
-    htmlcomplex: HTMLComplexConverter,
-    csv: CSVConverter
+  htmlsimple: HTMLSimpleConverter,
+  htmlcomplex: HTMLComplexConverter,
+  csv: CSVConverter
 };
 
