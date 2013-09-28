@@ -71,7 +71,7 @@ function DocGenerator(converter) {
 
 /**
  * Loads the documentation that is located in path.
- * @param {(string|string[])} - The path of the documentatoin. If this is an array every element will be loaded. Paths are relative to the directory of the executing script (__dirname). The file has to contain a well-formed yasp doc file, otherwise an exception is risen. If path is a directory it loads every file in this directory (recursively)
+ * @param {(string|string[])} - The path of the documentatoin. If this is an array every element will be loaded. Paths are relative to the directory of the executing script. The file has to contain a well-formed yasp doc file, otherwise an exception is risen. If path is a directory it loads every file in this directory (recursively)
  * @param {DocGenerator-loadedCallback} - The callback function that is executed when loading is done.
 */
 DocGenerator.prototype.load = function(path, cb) {
@@ -82,18 +82,16 @@ DocGenerator.prototype.load = function(path, cb) {
     
     if (!!cb) cb(null, this.input);
   } else {
-    var realPath = pathLib.join(__dirname, path);
-    
-    if (fsLib.statSync(realPath).isDirectory()) {
-      var files = fsLib.readdirSync(realPath);
+    if (fsLib.statSync(path).isDirectory()) {
+      var files = fsLib.readdirSync(path);
       files.forEach((function(file) {
         this.load(pathLib.join(path, file));
       }).bind(this));
       
       if (!!cb) cb(null, this.input)
-    } else if (pathLib.extname(realPath) == '.js') {
-      console.log('Load file '+realPath);
-      var text = fsLib.readFileSync(realPath).toString();
+    } else if (pathLib.extname(path) == '.js') {
+      console.log('Load file '+path);
+      var text = fsLib.readFileSync(path).toString();
       var loaded;
       try {
         loaded = JSON.parse(text);
