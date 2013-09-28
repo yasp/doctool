@@ -1,50 +1,32 @@
-/*
- * grunt-doctool
- * https://github.com/yasp/doctool
- *
- * Copyright (c) 2013 yasp
- * Licensed under the MIT license.
- */
-
 'use strict';
 
+var path = require('path');
+var async = require('async');
+var doctool = require(path.join(__dirname, "..", "doctool.js"));
+
 module.exports = function(grunt) {
+  grunt.registerMultiTask('doctool', '', function() {
+    var done = this.async();
+    var config = this.data;
+    var gen = new doctool.DocGenerator();
 
-  // Please see the Grunt documentation for more information regarding task
-  // creation: http://gruntjs.com/creating-tasks
-
-  grunt.registerMultiTask('doctool', 'The best Grunt plugin ever.', function() {
-    // Merge task-specific and/or target-specific options with these defaults.
-    var options = this.options({
-      punctuation: '.',
-      separator: ', '
-    });
-
-    // Iterate over all specified file groups.
-    this.files.forEach(function(f) {
-      // Concat specified files.
-      var src = f.src.filter(function(filepath) {
-        // Warn on and remove invalid source files (if nonull was set).
-        if (!grunt.file.exists(filepath)) {
-          grunt.log.warn('Source file "' + filepath + '" not found.');
-          return false;
-        } else {
-          return true;
+    async.waterfall(
+      [
+        function (cb) {
+          gen.load(config.input, cb);
+        },
+        function (data, cb) {
+          var converter = doctool.converters[config.converter];
+          gen.convert(converter);
+          gen.save(config.output, cb);
         }
-      }).map(function(filepath) {
-        // Read file source.
-        return grunt.file.read(filepath);
-      }).join(grunt.util.normalizelf(options.separator));
-
-      // Handle options.
-      src += options.punctuation;
-
-      // Write the destination file.
-      grunt.file.write(f.dest, src);
-
-      // Print a success message.
-      grunt.log.writeln('File "' + f.dest + '" created.');
-    });
+      ],
+      function (err) {
+        if(err) grunt.log.error(err);
+        else grunt.log.writeln("Converting doc was successful");
+    
+        done();
+      }
+    );
   });
-
 };

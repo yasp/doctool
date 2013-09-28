@@ -124,11 +124,10 @@ DocGenerator.prototype.load = function(path, cb) {
 */
 DocGenerator.prototype.save = function(path, cb) {
   if (this.result.length == 0) cb('Convert not called (successfully) yet (result is null)', null);
-  
-  fsLib.writeFile(pathLib.join(__dirname, path), this.result, (function(err) {
-    if (err) throw err;
-    if (!!cb) cb(null, this.result);
-  }).bind(this));
+
+  fsLib.writeFile(path, this.result, (function(err) {
+    if (!!cb) cb(err, this.result);
+  }));
 }
 
 /**
