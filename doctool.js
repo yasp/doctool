@@ -74,21 +74,18 @@ function DocGenerator(converter) {
  * @param {(string|string[])} - The path of the documentatoin. If this is an array every element will be loaded. Paths are relative to the directory of the executing script. The file has to contain a well-formed yasp doc file, otherwise an exception is risen. If path is a directory it loads every file in this directory (recursively)
  * @param {DocGenerator-loadedCallback} - The callback function that is executed when loading is done.
 */
-DocGenerator.prototype.load = function(path, cb) {
+DocGenerator.prototype.load = function(path) {
   if (path instanceof Array) {
     for (var i = 0; i < path.length; i++) {
        this.load(path[i]);
     }
-    
-    if (!!cb) cb(null, this.input);
   } else {
     if (fsLib.statSync(path).isDirectory()) {
       var files = fsLib.readdirSync(path);
-      files.forEach((function(file) {
-        this.load(pathLib.join(path, file));
-      }).bind(this));
-      
-      if (!!cb) cb(null, this.input)
+
+      for (var i = 0; i < files.length; i++) {
+        this.load(pathLib.join(path, files[i]));
+      }
     } else if (pathLib.extname(path) == '.js') {
       console.log('Load file '+path);
       var text = fsLib.readFileSync(path).toString();
@@ -96,15 +93,13 @@ DocGenerator.prototype.load = function(path, cb) {
       try {
         loaded = JSON.parse(text);
       } catch (ex) {
-        cb('Invalid documentation "'+ex.toString()+'"', null);
+        throw 'Invalid documentation "'+ex.toString()+'"';
       }
       if (!!loaded.commands) {
         this.input = this.input.concat(loaded.commands);
       } else {
         this.input.push(loaded);
       }
-      
-      if (!!cb) cb(null, this.input)
     }
   }
 }
