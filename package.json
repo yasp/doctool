@@ -1,24 +1,39 @@
 {
-  "name": "doctool",
-  "version": "0.0.1",
-  "author": "Robert Fischer <robert@programming-with-design.at>",
+  "name": "grunt-doctool",
   "description": "doctool is a tool that generates the yasp documantation out of the JSON files.",
-  "main": "doctool.js",
+  "version": "0.0.2",
+  "homepage": "https://github.com/yasp/doctool",
+  "author": "Robert Fischer <robert@programming-with-design.at>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yasp/doctool"
+    "url": "git://github.com/yasp/doctool.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yasp/doctool/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/yasp/doctool/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "Gruntfile.js",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt": "~0.4.1"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.1"
   },
   "keywords": [
-    "cli",
-    "doctool",
-    "server",
-    "generation"
-  ],
-  "dependencies" : { },
-  "devDependencies": {
-    "vows":">=0.5.8"
-  },
-  "engines": {
-    "node": ">=0.8.0"
-  }
+    "gruntplugin"
+  ]
 }
