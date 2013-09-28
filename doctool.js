@@ -40,6 +40,35 @@ function HTMLSimpleConverter() {
 }
 
 /**
+ * Puts all the commands into one JS file which is used by the emulator and assembler,
+ * @this {DocGenerator} - The generator that holds all the data required to generate the output data.
+ *
+ */
+function CommandsJsConverter() {
+  var result = '';
+  result = stringify(this.input);
+
+  return 'if (typeof yasp == \'undefined\') yasp = { };\nyasp.commands = ' + result + ';\n';
+}
+
+// https://gist.github.com/cowboy/3749767#file-stringify-js
+var stringify = function(obj, prop) {
+  var placeholder = '____PLACEHOLDER____';
+  var fns = [];
+  var json = JSON.stringify(obj, function(key, value) {
+    if (typeof value === 'function') {
+      fns.push(value);
+      return placeholder;
+    }
+    return value;
+  }, 2);
+  json = json.replace(new RegExp('"' + placeholder + '"', 'g'), function(_) {
+    return fns.shift();
+  });
+  return json;
+};
+
+/**
  *  Generates the documentation and returns the generated data as a more complex HTML file.
  * @this {DocGenerator} - The generator that holds all the data required to generate the output data.
  * 
@@ -91,7 +120,8 @@ DocGenerator.prototype.load = function(path) {
       var text = fsLib.readFileSync(path).toString();
       var loaded;
       try {
-        loaded = JSON.parse(text);
+        text = "loaded=" + text;
+        eval(text);
       } catch (ex) {
         throw 'Invalid documentation "'+ex.toString()+'"';
       }
@@ -154,6 +184,7 @@ DocGenerator.prototype.convert = function(converter) {
 exports.DocGenerator = DocGenerator;
 exports.converters = {
   htmlsimple: HTMLSimpleConverter,
+  commandsjs: CommandsJsConverter,
   htmlcomplex: HTMLComplexConverter,
   csv: CSVConverter
 };
