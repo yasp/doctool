@@ -12,20 +12,56 @@ function HTMLSimpleConverter() {
     var entry = this.input[i];
     result += '<h1>' + entry.name + '</h1>';
     if (entry.params.length > 0) {
-      result += "<h2>Parameters: ";
+      result += "<h2>Parameter: ";
       var first = false;
       for (var j = 0; j < entry.params.length; j++) {
         var type = entry.params[j];
         if (first) {
           result += ", ";
         }
-        result += type.type;
+        switch (type.type) {
+          case "r_byte":
+            result += "Byte Register";
+            break;
+          case "r_word":
+            result += "Word Register";
+            break;
+          case "l_byte":
+            result += "Byte Literal";
+            break;
+          case "l_word":
+            result += "Word Literal";
+            break;
+          case "pin":
+            result += "Pin";
+            break;
+          case "address":
+            result += "Label";
+            break;
+          default:
+            result += type.type;
+        }
+        
         first = true;
       }
       result += "</h2>";
     }
+    var desc = "";
+    for (var k in entry.doc) {
+      var val = entry.doc[k];
+      
+      desc += "<div class='help_"+k+"'>";
+      desc += "<p>"+val.description+"</p>";
+      
+      // Flags
+      if (!!val.flags) {
+        if (!!val.flags.z) desc += "<p class='stateaffected'>Zero Bit: " + val.flags.z + "</p>";
+        if (!!val.flags.c) desc += "<p class='stateaffected'>Carry Bit: " + val.flags.c + "</p>";
+      }
+      desc += "</div>";
+    }
     
-    result += '<p>' + entry.description + '</p>';
+    result += '<p>' + desc + '</p>';
   }
   
   
