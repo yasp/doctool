@@ -10,27 +10,35 @@ function HTMLSimpleConverter() {
   var result = '';
   for (var i = 0; i < this.input.length; i++) {
     var entry = this.input[i];
+
+    result += '<div class="command"';
+    result += ' data-name="' + entry.name + '"';
+    result += ' data-par-num="' + entry.params.length + '"';
+    for (var j = 0; j < entry.params.length; j++) {
+      result += ' data-par-' + j + '="' + entry.params[j].type + '"';
+    }
+    result += '>';
+
     result += '<h1>' + entry.name + '</h1>';
     if (entry.params.length > 0) {
-      result += "<h2>Parameter: ";
+      result += "<span class='params'>Parameter: ";
+      result += "<ul>";
       var first = false;
       for (var j = 0; j < entry.params.length; j++) {
         var type = entry.params[j];
-        if (first) {
-          result += ", ";
-        }
+        result += "<li>";
         switch (type.type) {
           case "r_byte":
-            result += "Byte Register";
+            result += "Byte-Register";
             break;
           case "r_word":
-            result += "Word Register";
+            result += "Word-Register";
             break;
           case "l_byte":
-            result += "Byte Literal";
+            result += "Byte-Literal";
             break;
           case "l_word":
-            result += "Word Literal";
+            result += "Word-Literal";
             break;
           case "pin":
             result += "Pin";
@@ -41,27 +49,31 @@ function HTMLSimpleConverter() {
           default:
             result += type.type;
         }
-        
-        first = true;
+        result += "</li>";
       }
-      result += "</h2>";
+      result += "</ul>";
+      result += "</span>";
     }
-    var desc = "";
-    for (var k in entry.doc) {
-      var val = entry.doc[k];
-      
-      desc += "<div class='help_"+k+"'>";
-      desc += "<p>"+val.description+"</p>";
-      
+
+    for (var lang in entry.doc) {
+      var val = entry.doc[lang];
+
+      result += "<p class='lang_" + lang + "'>" + val.description + "</p>";
+
+      result += "<ul class='flags' class='lang_" + lang + "'>";
       // Flags
       if (!!val.flags) {
-        if (!!val.flags.z) desc += "<p class='stateaffected'>Zero Bit: " + val.flags.z + "</p>";
-        if (!!val.flags.c) desc += "<p class='stateaffected'>Carry Bit: " + val.flags.c + "</p>";
+        for (var flag in val.flags) {
+          result += "<li class='flag'>";
+          result += "<span class='name'>" + flag + "</span>: ";
+          result += "<span class='condition'>" + val.flags[flag] + "</span>";
+          result += "</li>";
+        }
       }
-      desc += "</div>";
+      result += "</ul>";
     }
-    
-    result += '<p>' + desc + '</p>';
+
+    result += '</div>';
   }
   
   
@@ -71,7 +83,7 @@ function HTMLSimpleConverter() {
   <head> \
     <title>yasp documentation</title> \
   </head> \
-  <body>' + result + ' </body> \
+  <body><div class="doctool">' + result + '</div></body> \
 </html>';
 }
 
