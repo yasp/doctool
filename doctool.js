@@ -60,7 +60,7 @@ function HTMLSimpleConverter() {
 
       result += "<p class='lang_" + lang + "'>" + val.description + "</p>";
 
-      result += "<ul class='flags' class='lang_" + lang + "'>";
+      result += "<ul class='flags lang_" + lang + "'>";
       // Flags
       if (!!val.flags) {
         for (var flag in val.flags) {
