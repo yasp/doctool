@@ -122,7 +122,94 @@ var stringify = function(obj, prop) {
  * 
 */
 function HTMLComplexConverter() {
-  // TODO!
+  var result = '<table class="maintable">';
+  for (var i = 0; i < this.input.length; i++) {
+    if (i % 2 == 0) {
+      if (i != 0) {
+        result += '</tr>';
+      }
+      result += '<tr>';
+    }
+    var entry = this.input[i];
+
+    result += '<td>';
+
+    result += '<h3>' + entry.name + '</h3>';
+    if (entry.params.length > 0) {
+      result += "<span>Parameter: ";
+      var first = false;
+      for (var j = 0; j < entry.params.length; j++) {
+        var type = entry.params[j];
+        switch (type.type) {
+          case "r_byte":
+            result += "Byte-Register";
+            break;
+          case "r_word":
+            result += "Word-Register";
+            break;
+          case "l_byte":
+            result += "Byte-Literal";
+            break;
+          case "l_word":
+            result += "Word-Literal";
+            break;
+          case "pin":
+            result += "Pin";
+            break;
+          case "address":
+            result += "Label";
+            break;
+          default:
+            result += type.type;
+        }
+        if (j < entry.params.length-1) result += ", ";
+      }
+      result += "</span>";
+    }
+    
+    result += '<table><tr><th>Deutsch</th><th>English</th></tr><tr>';
+    for (var lang in entry.doc) {
+      result += '<td>';
+      var val = entry.doc[lang];
+      
+      result += "<p>" + val.description + "</p>";
+
+      result += "<ul>";
+      // Flags
+      if (!!val.flags) {
+        for (var flag in val.flags) {
+          result += "<li>";
+          result += "<span>" + flag + "</span>: ";
+          result += "<span>" + val.flags[flag] + "</span>";
+          result += "</li>";
+        }
+      }
+      result += "</ul></td>";
+    }
+    result += '</tr></table>';
+
+    result += '</td>';
+  }
+  if (this.input.length > 0) {
+    result += '</tr>';
+  }
+  result += '</table>';
+  
+
+  return '<meta charset="utf-8"> \
+<html> \
+  <head> \
+    <title>yasp documentation</title> \
+    <style> \
+    .maintable { box-sizing: border-box; border-width: 0 0 1px 1px; border-spacing: 0; border-collapse: collapse; border-style: solid} \
+    .maintable td, .maintable th { margin: 0px; padding: 4px; border-width: 1px 1px 0 0; border-style: solid } \
+    .maintable table td, .maintable table th  {border: none !important; } \
+    ul {margin-top: 0px; margin-bottom: 0px; } \
+    .params { list-style: none; padding: 0px; } \
+    </style> \
+  </head> \
+  <body><div>' + result + '</div></body> \
+</html>';
 }
 
 /**
