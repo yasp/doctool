@@ -167,9 +167,10 @@ function HTMLComplexConverter() {
       result += "</span>";
     }
     
-    result += '<table><tr><th>Deutsch</th><th>English</th></tr><tr>';
     for (var lang in entry.doc) {
-      result += '<td>';
+      if (lang == 'en') result += '<h4>English</h4>';
+      if (lang == 'de') result += '<h4>Deutsch</h4>';
+      
       var val = entry.doc[lang];
       
       result += "<p>" + val.description + "</p>";
@@ -184,11 +185,40 @@ function HTMLComplexConverter() {
           result += "</li>";
         }
       }
-      result += "</ul></td>";
+      result += "</ul>";
     }
-    result += '</tr></table>';
-
-    result += '</td>';
+    
+    if (entry.code) {
+      result += "<h4>Binary Code</h4>";
+      result += "<table><tr>";
+      for (var j = 0; j < entry.code.length; j++) {
+        result += "<th>"+(j+1)+". Byte</th>"
+      }
+      result += "</tr><tr>";
+      for (var j = 0; j < entry.code.length; j++) {
+        var code = entry.code[j];
+        var val, len;
+        if (typeof code.value == "string") {
+          val = +parseInt(code.value, 2);
+          len = code.value.length;
+        } else {
+          val = +code.value;
+          len = 8;
+        }
+        
+        val = val.toString(2);
+        for (var k = val.length; k < 8; k++) {
+          val = "0" + val;
+        }
+        
+        result += "<td>" + val + "</td>";
+      }
+      result += "</tr></table>"
+    }
+    
+    
+    result += "<p>Anzahl der Unit-Tests: / Number of Unit-Tests: <b>"+(!!entry.tests ? entry.tests.length : 0)+"</b></p>";
+    result += "<p>Codezeilen / Lines Of Code (LOC): <b>"+(entry.exec.toString().split(';').length-1)+"</b></p>";
   }
   if (this.input.length > 0) {
     result += '</tr>';
@@ -205,7 +235,7 @@ function HTMLComplexConverter() {
     .maintable td, .maintable th { margin: 0px; padding: 4px; border-width: 1px 1px 0 0; border-style: solid } \
     .maintable table td, .maintable table th  {border: none !important; } \
     ul {margin-top: 0px; margin-bottom: 0px; } \
-    .params { list-style: none; padding: 0px; } \
+    h4 { padding: 0px; margin: 0px; } \
     </style> \
   </head> \
   <body><div>' + result + '</div></body> \
