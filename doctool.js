@@ -134,9 +134,13 @@ function HTMLComplexConverter() {
 
     result += '<td>';
 
-    result += '<h3>' + entry.name + '</h3>';
+    result += '<h3>';
+    if(entry.name instanceof Array)
+      result += entry.name.join(', ');
+    else
+      result += entry.name;
     if (entry.params.length > 0) {
-      result += "<span>Parameter: ";
+      result += ' ';
       var first = false;
       for (var j = 0; j < entry.params.length; j++) {
         var type = entry.params[j];
@@ -164,61 +168,116 @@ function HTMLComplexConverter() {
         }
         if (j < entry.params.length-1) result += ", ";
       }
-      result += "</span>";
     }
+    result += '</h3>';
     
     for (var lang in entry.doc) {
-      if (lang == 'en') result += '<h4>English</h4>';
-      if (lang == 'de') result += '<h4>Deutsch</h4>';
+      if (lang == 'en') result += '<b>English: </b>';
+      if (lang == 'de') result += '<b>Deutsch: </b>';
       
       var val = entry.doc[lang];
       
-      result += "<p>" + val.description + "</p>";
+      result += "<span>" + val.description + "</span><br>";
 
-      result += "<ul>";
       // Flags
-      if (!!val.flags) {
+      if(!!val.flags && Object.keys(val.flags).length > 0) {
+        result += "<ul>";
         for (var flag in val.flags) {
           result += "<li>";
-          result += "<span>" + flag + "</span>: ";
+          var hflag = "";
+          if(flag === 'z') hflag = 'Zero-Flag';
+          if(flag === 'c') hflag = 'Carry-Flag';
+          result += "<span>" + hflag + " </span>";
           result += "<span>" + val.flags[flag] + "</span>";
           result += "</li>";
         }
+        result += "</ul>";
       }
-      result += "</ul>";
     }
+
+    result += "<br><span>Anzahl der Unit-Tests: / Number of Unit-Tests: <b>"+(!!entry.tests ? entry.tests.length : 0)+"</b></span><br>";
+    result += "<span>Codezeilen / Lines Of Code (LOC): <b>"+(entry.exec.toString().split(';').length-1)+"</b></span><br>";
     
     if (entry.code) {
-      result += "<h4>Binary Code</h4>";
-      result += "<table><tr>";
-      for (var j = 0; j < entry.code.length; j++) {
-        result += "<th>"+(j+1)+". Byte</th>"
+      result += "<br>";
+      result += "<b>Binary Code: </b><code>";
+
+      var ccode = "";
+      var ppointer = 0;
+
+      function addCCode (val) {
+        for(var i = 0; i < val.length; i++) {
+          ccode += val[i];
+          ppointer++;
+
+          if(ppointer % 8 === 0)
+            ccode += " ";
+        }
       }
-      result += "</tr><tr>";
+
+      function repeat (val, n) {
+        var vval = [];
+        for(; n > 0; n--) {
+          vval.push(val);
+        }
+        return vval;
+      }
+      function pad(n, width, z) {
+        z = z || '0';
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+      }
+
+      ccode += "<span style='color: blue'>";
       for (var j = 0; j < entry.code.length; j++) {
         var code = entry.code[j];
         var val, len;
         if (typeof code.value == "string") {
-          val = +parseInt(code.value, 2);
-          len = code.value.length;
+          val = code.value;
         } else {
-          val = +code.value;
-          len = 8;
+          val = pad(code.value.toString(2), 8);
         }
-        
-        val = val.toString(2);
-        for (var k = val.length; k < 8; k++) {
-          val = "0" + val;
-        }
-        
-        result += "<td>" + val + "</td>";
+
+        addCCode(val);
       }
-      result += "</tr></table>"
+      ccode += "</span>";
+
+      for (var j = 0; j < entry.params.length; j++) {
+
+        ccode += "<span style='color:";
+        if(j == 0) ccode += "red";
+        if(j == 1) ccode += "green";
+        ccode += "'>";
+
+        var type = entry.params[j];
+        switch (type.type) {
+          case "r_byte":
+            addCCode(repeat("R<sub>B</sub>", 5));
+            break;
+          case "r_word":
+            addCCode(repeat("R<sub>W</sub>", 5));
+            break;
+          case "l_byte":
+            addCCode(repeat("L<sub>B</sub>", 8));
+            break;
+          case "l_word":
+            addCCode(repeat("L<sub>W</sub>", 8*2));
+            break;
+          case "pin":
+            addCCode(repeat("P", 5));
+            break;
+          case "address":
+            addCCode(repeat("A", 11));
+            break;
+          default:
+            ccode += type.type;
+        }
+        ccode += "</span>";
+      }
+
+      result +=ccode + "</code>";
+
     }
-    
-    
-    result += "<p>Anzahl der Unit-Tests: / Number of Unit-Tests: <b>"+(!!entry.tests ? entry.tests.length : 0)+"</b></p>";
-    result += "<p>Codezeilen / Lines Of Code (LOC): <b>"+(entry.exec.toString().split(';').length-1)+"</b></p>";
   }
   if (this.input.length > 0) {
     result += '</tr>';
